@@ -1,6 +1,6 @@
 # Turtle 3D
 
-This project implements a 3D renderer using only the turtle Python library.
+This project implements a 3D renderer in Python using only the turtle library.
 
 ## Example
 
