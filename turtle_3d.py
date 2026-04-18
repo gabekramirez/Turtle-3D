@@ -17,6 +17,7 @@ DEFAULT_COLOR = (0.5, 0.5, 0.5)
 Vec2 = tuple[float, float]
 Vec3 = tuple[float, float, float]
 Tri = tuple[int, int, int, int, int]
+Exit = turtle.Terminator
 
 current_angle: float | None = None
 
@@ -563,7 +564,7 @@ def main():
             scene.move_camera(delta_x, delta_y, delta_z, 0, 0, 0)
 
             scene.draw(window)
-    except turtle.Terminator:
+    except Exit:
         pass
 
 

@@ -16,9 +16,9 @@ def main():
     input_camera_z = input("Enter camera z: ")
     input_speed = input("Enter speed: ")
 
-    window = Window(500, 500, "3D Viewer")
-    mesh = read_obj(input_directory, input_file_name)
-    scene = Scene([mesh])
+    window = turtle_3d.Window(500, 500, "3D Viewer")
+    mesh = turtle_3d.read_obj(input_directory, input_file_name)
+    scene = turtle_3d.Scene([mesh])
 
     scene.camera_z = float(input_camera_z)
     move_speed = float(input_speed)
@@ -34,11 +34,11 @@ def main():
             delta_x = (window.key_pressed("d") - window.key_pressed("a")) * move_speed
             delta_y = (window.key_pressed("space") - window.key_pressed("Shift_L")) * move_speed
             delta_z = (window.key_pressed("w") - window.key_pressed("s")) * move_speed
-            delta_z, delta_x = rotate2(delta_z, delta_x, scene.camera_pitch)
+            delta_z, delta_x = turtle_3d.rotate2(delta_z, delta_x, scene.camera_pitch)
             scene.move_camera(delta_x, delta_y, delta_z, 0, 0, 0)
 
             scene.draw(window)
-    except turtle.Terminator:
+    except turtle_3d.Exit:
         pass
 
 
@@ -46,3 +46,5 @@ if __name__ == "__main__":
     main()
 
 ```
+
+This example is the same program ran if you try running the turtle_3d script as main.
