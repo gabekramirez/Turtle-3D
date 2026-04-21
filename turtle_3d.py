@@ -66,10 +66,10 @@ def rotate2(x: float, y: float, angle: float) -> Vec2:
     return x * cosine - y * sine, y * cosine + x * sine
 
 
-def rotate3(x, y, z, pitch, yaw, roll) -> Vec3:
+def rotate3(x: float, y: float, z: float, yaw: float, pitch: float, roll: float) -> Vec3:
     y, x = rotate2(y, x, roll)
-    z, x = rotate2(z, x, pitch)
-    z, y = rotate2(z, y, yaw)
+    z, x = rotate2(z, x, yaw)
+    z, y = rotate2(z, y, pitch)
     return x, y, z
 
 
@@ -309,8 +309,8 @@ class Mesh:
         self.x = 0
         self.y = 0
         self.z = 0
-        self.pitch = 0
         self.yaw = 0
+        self.pitch = 0
         self.roll = 0
 
 
@@ -411,7 +411,6 @@ def write_obj(directory: str, obj_file_name: str, mtl_file_name: str, mesh: Mesh
             mtl_text += f"newmtl {mtl}\n"
             mtl_text += f"Kd {color[0]} {color[1]} {color[2]}\n"
             obj_text += f"usemtl {mtl}\n"
-            mtl_value = color
             selected_mtl = mtl
         obj_text += f"f {a + 1}//{n + 1} {b + 1}//{n + 1} {c + 1}//{n + 1}\n"
     if directory:
@@ -434,24 +433,24 @@ class Scene:
         self.camera_x = 0
         self.camera_y = 0
         self.camera_z = 0
-        self.camera_pitch = 0
         self.camera_yaw = 0
+        self.camera_pitch = 0
         self.camera_roll = 0
         self.camera_fov = 90
         self.camera_z_near = 0.01
 
-    def move_camera(self, x: float = 0, y: float = 0, z: float = 0, pitch: float = 0, yaw: float = 0, roll: float = 0):
+    def move_camera(self, x: float = 0, y: float = 0, z: float = 0, yaw: float = 0, pitch: float = 0, roll: float = 0):
         self.camera_x += x
         self.camera_y += y
         self.camera_z += z
-        self.camera_pitch += pitch
         self.camera_yaw += yaw
+        self.camera_pitch += pitch
         self.camera_roll += roll
-        self.camera_pitch = 180 - (180 - self.camera_pitch) % 360
-        if self.camera_yaw > 90:
-            self.camera_yaw = 90
-        elif self.camera_yaw < -90:
-            self.camera_yaw = -90
+        self.camera_yaw = 180 - (180 - self.camera_yaw) % 360
+        if self.camera_pitch > 90:
+            self.camera_pitch = 90
+        elif self.camera_pitch < -90:
+            self.camera_pitch = -90
         self.camera_roll = 180 - (180 - self.camera_roll) % 360
 
     def draw(self, window: Window):
@@ -464,13 +463,13 @@ class Scene:
                 self._view_vertices.append(rotate3(x + mesh.x - self.camera_x,
                                                    y + mesh.y - self.camera_y,
                                                    z + mesh.z - self.camera_z,
-                                                   mesh.pitch - self.camera_pitch,
                                                    mesh.yaw - self.camera_yaw,
+                                                   mesh.pitch - self.camera_pitch,
                                                    mesh.roll - self.camera_roll))
             for x, y, z in mesh.normals:
                 self._world_normals.append(rotate3(x, y, z,
+                                                   mesh.yaw - self.camera_yaw,
                                                    mesh.pitch - self.camera_pitch,
-                                                   mesh.yaw   - self.camera_yaw,
                                                    mesh.roll  - self.camera_roll))
             self._draw_vertices.clear()
             for vertex in self._view_vertices:
@@ -496,8 +495,6 @@ class Scene:
                     sx = va[0] + vb[0] + vc[0]
                     sy = va[1] + vb[1] + vc[1]
                     sz = va[2] + vb[2] + vc[2]
-                    lz = min(va[2], vb[2], vc[2])
-                    mz = max(va[2], vb[2], vc[2])
                     if dot_product(nx, ny, nz, sx, sy, sz) <= 0:
                         if in_view == 3:
                             self._draw_tris.append((sz, pa, pb, pc, color))
@@ -554,13 +551,13 @@ def main():
         while True:
             window.update()
 
-            delta_pitch = (window.key_pressed("Right") - window.key_pressed("Left")) * turn_speed
-            delta_yaw = (window.key_pressed("Up") - window.key_pressed("Down")) * turn_speed
-            scene.move_camera(0, 0, 0, delta_pitch, delta_yaw, 0)
+            delta_yaw = (window.key_pressed("Right") - window.key_pressed("Left")) * turn_speed
+            delta_pitch = (window.key_pressed("Up") - window.key_pressed("Down")) * turn_speed
+            scene.move_camera(0, 0, 0, delta_yaw, delta_pitch, 0)
             delta_x = (window.key_pressed("d") - window.key_pressed("a")) * move_speed
             delta_y = (window.key_pressed("space") - window.key_pressed("Shift_L")) * move_speed
             delta_z = (window.key_pressed("w") - window.key_pressed("s")) * move_speed
-            delta_z, delta_x = rotate2(delta_z, delta_x, scene.camera_pitch)
+            delta_z, delta_x = rotate2(delta_z, delta_x, scene.camera_yaw)
             scene.move_camera(delta_x, delta_y, delta_z, 0, 0, 0)
 
             scene.draw(window)
