@@ -68,9 +68,6 @@ Table of Contents
 
 ### Mesh Class
 - Mesh(vertices: list[Vec3], normals: list[Vec3], colors: list[Vec3], tris: list[Tri]) -> Mesh
-
-### Scene Class
-- Scene(meshes: list[Mesh])) -> Scene
 - .vertices: Vec3
 - .normals = normals
 - .colors = colors
@@ -81,6 +78,18 @@ Table of Contents
 - .yaw = 0
 - .pitch = 0
 - .roll = 0
+
+### Scene Class
+- Scene(meshes: list[Mesh])) -> Scene
+- .meshes
+- .camera_x = 0
+- .camera_y = 0
+- .camera_z = 0
+- .camera_yaw = 0
+- .camera_pitch = 0
+- .camera_roll = 0
+- .camera_fov = 90
+- .camera_z_near = 0.01
 
 
 ## Example
