@@ -126,7 +126,7 @@ def main():
             delta_x = (window.key_pressed("d") - window.key_pressed("a")) * move_speed
             delta_y = (window.key_pressed("space") - window.key_pressed("Shift_L")) * move_speed
             delta_z = (window.key_pressed("w") - window.key_pressed("s")) * move_speed
-            delta_z, delta_x = turtle_3d.rotate2(delta_z, delta_x, scene.camera_pitch)
+            delta_z, delta_x = turtle_3d.rotate2(delta_z, delta_x, scene.camera_yaw)
             scene.move_camera(delta_x, delta_y, delta_z, 0, 0, 0)
 
             scene.draw(window)
