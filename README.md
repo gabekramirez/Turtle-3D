@@ -90,6 +90,8 @@ Table of Contents
 - .camera_roll = 0
 - .camera_fov = 90
 - .camera_z_near = 0.01
+- .move_camera(x: float = 0, y: float = 0, z: float = 0, pitch: float = 0, yaw: float = 0, roll: float = 0) -> None
+- .draw(window: Window) -> None
 
 
 ## Example
@@ -118,9 +120,9 @@ def main():
         while True:
             window.update()
 
-            delta_pitch = (window.key_pressed("Right") - window.key_pressed("Left")) * turn_speed
-            delta_yaw = (window.key_pressed("Up") - window.key_pressed("Down")) * turn_speed
-            scene.move_camera(0, 0, 0, delta_pitch, delta_yaw, 0)
+            delta_yaw = (window.key_pressed("Right") - window.key_pressed("Left")) * turn_speed
+            delta_pitch = (window.key_pressed("Up") - window.key_pressed("Down")) * turn_speed
+            scene.move_camera(0, 0, 0, delta_yaw, delta_pitch, 0)
             delta_x = (window.key_pressed("d") - window.key_pressed("a")) * move_speed
             delta_y = (window.key_pressed("space") - window.key_pressed("Shift_L")) * move_speed
             delta_z = (window.key_pressed("w") - window.key_pressed("s")) * move_speed
