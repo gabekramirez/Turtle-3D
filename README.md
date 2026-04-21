@@ -54,7 +54,7 @@ Table of Contents
 - .default_height: int
 - .width: int
 - .height: int
-- .bg_color: tuple[float, float, float] = DEFAULT_COLOR
+- .bg_color: Vec3 = DEFAULT_COLOR
 - .mouse_x: float = 0.5
 - .mouse_y: float = 0.5
 - .set_icon(icon: str) -> None
@@ -68,28 +68,28 @@ Table of Contents
 
 ### Mesh Class
 - Mesh(vertices: list[Vec3], normals: list[Vec3], colors: list[Vec3], tris: list[Tri]) -> Mesh
-- .vertices: Vec3
-- .normals = normals
-- .colors = colors
-- .tris = tris
-- .x = 0
-- .y = 0
-- .z = 0
-- .yaw = 0
-- .pitch = 0
-- .roll = 0
+- .vertices: list[Vec3]
+- .normals: list[Vec3]
+- .colors: list[Vec3]
+- .tris: list[Tri]
+- .x: float = 0
+- .y: float = 0
+- .z: float = 0
+- .yaw: float = 0
+- .pitch: float = 0
+- .roll: float = 0
 
 ### Scene Class
 - Scene(meshes: list[Mesh])) -> Scene
-- .meshes
-- .camera_x = 0
-- .camera_y = 0
-- .camera_z = 0
-- .camera_yaw = 0
-- .camera_pitch = 0
-- .camera_roll = 0
-- .camera_fov = 90
-- .camera_z_near = 0.01
+- .meshes: list[Mesh]
+- .camera_x: float = 0
+- .camera_y: float = 0
+- .camera_z: float = 0
+- .camera_yaw: float = 0
+- .camera_pitch: float = 0
+- .camera_roll: float = 0
+- .camera_fov: float = 90
+- .camera_z_near: float = 0.01
 - .move_camera(x: float = 0, y: float = 0, z: float = 0, pitch: float = 0, yaw: float = 0, roll: float = 0) -> None
 - .draw(window: Window) -> None
 
