@@ -26,7 +26,6 @@ Table of Contents
 - Vec3 - tuple of 3 floats (x, y, z)
 - Color - also a tuple of 3 floats (r, g, b) - but each float should be in the range [0, 1]
 - Tri - tuple of 5 ints: 3 vertex indices, 1 normal vector index, 1 color index
-- Exit - Exception raised when trying to access a closed turtle window
 
 ### Basic Math Functions
 - cos(angle: float) -> float
