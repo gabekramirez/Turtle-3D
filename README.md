@@ -119,10 +119,10 @@ def main():
     while running:
         delta_yaw = 0
         delta_pitch = 0
-        if window.mouse_down(1):
-            if window.mouse_clicked(1, "drag"):
-                held_mouse_x = window.mouse_x
-                held_mouse_y = window.mouse_y
+        if window.mouse_clicked(1, "drag"):
+            held_mouse_x = window.mouse_x
+            held_mouse_y = window.mouse_y
+        elif window.mouse_down(1):
             delta_yaw = (window.mouse_x - held_mouse_x) * 180
             delta_pitch = (window.mouse_y - held_mouse_y) * -180
             held_mouse_x = window.mouse_x
