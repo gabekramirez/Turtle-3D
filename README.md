@@ -91,7 +91,7 @@ Table of Contents
 - .camera_roll: float = 0
 - .camera_fov: float = 90
 - .camera_z_near: float = 0.01
-- .move_camera(x: float = 0, y: float = 0, z: float = 0, yaw: float = 0, pitch: float = 0, roll: float = 0) -> None
+- .set_camera_direction(self, yaw: float, pitch: float, roll: float) -> None
 - .draw(window: Window) -> None
 
 
@@ -127,12 +127,14 @@ def main():
             delta_pitch = (window.mouse_y - held_mouse_y) * -180
             held_mouse_x = window.mouse_x
             held_mouse_y = window.mouse_y
-        scene.move_camera(0, 0, 0, delta_yaw, delta_pitch, 0)
+        scene.set_camera_direction(scene.camera_yaw + delta_yaw, scene.camera_pitch + delta_pitch, 0)
         delta_x = (window.key_pressed("d") - window.key_pressed("a")) * move_speed
         delta_y = (window.key_pressed("space") - window.key_pressed("Shift_L")) * move_speed
         delta_z = (window.key_pressed("w") - window.key_pressed("s")) * move_speed
         delta_z, delta_x = turtle_3d.rotate2(delta_z, delta_x, scene.camera_yaw)
-        scene.move_camera(delta_x, delta_y, delta_z, 0, 0, 0)
+        scene.camera_x += delta_x
+        scene.camera_y += delta_y
+        scene.camera_z += delta_z
 
         scene.draw(window)
         running = window.update()
