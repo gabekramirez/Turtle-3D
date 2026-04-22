@@ -1,6 +1,6 @@
 # Turtle 3D
 
-This project implements a 3D renderer in Python using only the turtle library as a fun programming challenge. It is not a very serious program outside of being a challege, as there is no practical reason for a program like this to only use the turtle library.
+This project implements a 3D renderer in Python using only the turtle library as a fun programming challenge. It is not a very serious program outside of being a challenge, as there is no practical reason for a program like this to only use the turtle library.
 
 
 Table of Contents
@@ -19,11 +19,12 @@ Table of Contents
 
 ### Constants
 - OUTLINE_MESH - If True, a black outline is drawn around every triangle
-- PATH_SEPERATOR - String used to seperate directory levels in file system
+- PATH_SEPERATOR - String used to separate directory levels in file system
 - TRIG_PRECISION - How far the turtle moves to calculate trig functions
 - DEFAULT_COLOR - Fall back color when none is specified
 - Vec2 - tuple of 2 floats (x, y)
 - Vec3 - tuple of 3 floats (x, y, z)
+- Color - also a tuple of 3 floats (r, g, b) - but each float should be in the range [0, 1]
 - Tri - tuple of 5 ints: 3 vertex indices, 1 normal vector index, 1 color index
 - Exit - Exception raised when trying to access a closed turtle window
 
@@ -54,23 +55,24 @@ Table of Contents
 - .default_height: int
 - .width: int
 - .height: int
-- .bg_color: Vec3 = DEFAULT_COLOR
+- .bg_color: Color = DEFAULT_COLOR
 - .mouse_x: float = 0.5
 - .mouse_y: float = 0.5
 - .set_icon(icon: str) -> None
 - .reset() -> None
 - .toggle_fullscreen() -> None
+- .mouse_down(button: int) -> bool
 - .mouse_clicked(button: int, keybind_name: str) -> bool
 - .key_pressed(key: str) -> bool
 - .key_tapped(key: str, keybind_name: str) -> bool
-- .add_keybind(self, key: str) -> None
-- .update(self) -> bool
+- .add_keybind(key: str) -> None
+- .update() -> bool
 
 ### Mesh Class
-- Mesh(vertices: list[Vec3], normals: list[Vec3], colors: list[Vec3], tris: list[Tri]) -> Mesh
+- Mesh(vertices: list[Vec3], normals: list[Vec3], colors: list[Color], tris: list[Tri]) -> Mesh
 - .vertices: list[Vec3]
 - .normals: list[Vec3]
-- .colors: list[Vec3]
+- .colors: list[Color]
 - .tris: list[Tri]
 - .x: float = 0
 - .y: float = 0
@@ -103,35 +105,38 @@ import turtle_3d
 
 
 def main():
-    input_directory = input("Enter directory: ")
-    input_file_name = input("Enter obj file name: ")
-    input_camera_z = input("Enter camera z: ")
-    input_speed = input("Enter speed: ")
+    directory = input("Enter directory: ")
+    file_name = input("Enter obj file name: ")
+    move_speed = float(input("Enter speed: "))
 
     window = turtle_3d.Window(500, 500, "3D Viewer")
-    mesh = turtle_3d.read_obj(input_directory, input_file_name)
+    mesh = turtle_3d.read_obj(directory, file_name)
     scene = turtle_3d.Scene([mesh])
 
-    scene.camera_z = float(input_camera_z)
-    move_speed = float(input_speed)
-    turn_speed = float(input_speed) * 30
+    held_mouse_x = 0
+    held_mouse_y = 0
 
-    try:
-        while True:
-            window.update()
+    running = True
+    while running:
+        delta_yaw = 0
+        delta_pitch = 0
+        if window.mouse_down(1):
+            if window.mouse_clicked(1, "drag"):
+                held_mouse_x = window.mouse_x
+                held_mouse_y = window.mouse_y
+            delta_yaw = (window.mouse_x - held_mouse_x) * 180
+            delta_pitch = (window.mouse_y - held_mouse_y) * -180
+            held_mouse_x = window.mouse_x
+            held_mouse_y = window.mouse_y
+        scene.move_camera(0, 0, 0, delta_yaw, delta_pitch, 0)
+        delta_x = (window.key_pressed("d") - window.key_pressed("a")) * move_speed
+        delta_y = (window.key_pressed("space") - window.key_pressed("Shift_L")) * move_speed
+        delta_z = (window.key_pressed("w") - window.key_pressed("s")) * move_speed
+        delta_z, delta_x = turtle_3d.rotate2(delta_z, delta_x, scene.camera_yaw)
+        scene.move_camera(delta_x, delta_y, delta_z, 0, 0, 0)
 
-            delta_yaw = (window.key_pressed("Right") - window.key_pressed("Left")) * turn_speed
-            delta_pitch = (window.key_pressed("Up") - window.key_pressed("Down")) * turn_speed
-            scene.move_camera(0, 0, 0, delta_yaw, delta_pitch, 0)
-            delta_x = (window.key_pressed("d") - window.key_pressed("a")) * move_speed
-            delta_y = (window.key_pressed("space") - window.key_pressed("Shift_L")) * move_speed
-            delta_z = (window.key_pressed("w") - window.key_pressed("s")) * move_speed
-            delta_z, delta_x = turtle_3d.rotate2(delta_z, delta_x, scene.camera_pitch)
-            scene.move_camera(delta_x, delta_y, delta_z, 0, 0, 0)
-
-            scene.draw(window)
-    except turtle_3d.Exit:
-        pass
+        scene.draw(window)
+        running = window.update()
 
 
 if __name__ == "__main__":

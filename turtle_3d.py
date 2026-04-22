@@ -14,10 +14,11 @@ OUTLINE_MESH = False
 PATH_SEPERATOR = "/"
 TRIG_PRECISION = 100
 DEFAULT_COLOR = (0.5, 0.5, 0.5)
+
 Vec2 = tuple[float, float]
 Vec3 = tuple[float, float, float]
+Color = tuple[float, float, float]
 Tri = tuple[int, int, int, int, int]
-Exit = turtle.Terminator
 
 current_angle: float | None = None
 
@@ -205,25 +206,25 @@ class Window:
         self.reset()
         turtle.tracer(0, 0)
 
-        self.binds: set[str] = set()
-        self.keybinds: dict[str, bool] = {}
+        self._binds: set[str] = set()
+        self._keybinds: dict[str, bool] = {}
 
         self._mouse_binds: dict[str, int] = {}
         self._mouse_buttons: set[int] = set()
         self.mouse_x = 0.5
         self.mouse_y = 0.5
-        mouse_button = 1
-        while mouse_button > 0:
-            def mouse_pressed(x: float, y: float, button=mouse_button):
-                self.mouse_x = x / self.width
-                self.mouse_y = y / self.height
-                self._mouse_binds.clear()
-                self._mouse_buttons.add(button)
-            try:
-                self._turtle_screen.onclick(mouse_pressed, mouse_button)
-                mouse_button += 1
-            except turtle.TK.TclError:
-                mouse_button = 0
+        def mouse_press(event):
+            self._mouse_binds.clear()
+            self._mouse_buttons.add(event.num)
+        self._root.bind("<ButtonPress>", mouse_press)
+        def mouse_release(event):
+            self._mouse_binds.clear()
+            self._mouse_buttons.remove(event.num)
+        self._root.bind("<ButtonRelease>", mouse_release)
+        def mouse_move(event):
+            self.mouse_x = event.x / self.width
+            self.mouse_y = event.y / self.height
+        self._root.bind("<Motion>", mouse_move)
 
         turtle.listen()
 
@@ -248,8 +249,11 @@ class Window:
         else:
             self._root.geometry(self._last_geometry)
 
+    def mouse_down(self, button: int) -> bool:
+        return button in self._mouse_buttons
+
     def mouse_clicked(self, button: int, keybind_name: str) -> bool:
-        if button in self._mouse_buttons:
+        if self.mouse_down(button):
             if keybind_name not in self._mouse_binds.keys():
                 self._mouse_binds[keybind_name] = button
                 return True
@@ -258,50 +262,53 @@ class Window:
         return False
 
     def key_pressed(self, key: str) -> bool:
-        if key not in self.keybinds.keys():
+        if key not in self._keybinds.keys():
             self.add_keybind(key)
-        return self.keybinds[key]
+        return self._keybinds[key]
 
     def key_tapped(self, key: str, keybind_name: str) -> bool:
         if self.key_pressed(key):
-            if keybind_name not in self.binds:
-                self.binds.add(keybind_name)
+            if keybind_name not in self._binds:
+                self._binds.add(keybind_name)
                 return True
-        elif keybind_name in self.binds:
-            self.binds.remove(keybind_name)
+        elif keybind_name in self._binds:
+            self._binds.remove(keybind_name)
         return False
 
     def add_keybind(self, key: str):
         """https://www.tcl-lang.org/man/tcl8.4/TkCmd/keysyms.htm"""
-        self.keybinds[key] = False
+        self._keybinds[key] = False
         def key_pressed(keybind_key=key):
-            self.keybinds[keybind_key] = True
+            self._keybinds[keybind_key] = True
         def key_released(keybind_key=key):
-            self.keybinds[keybind_key] = False
+            self._keybinds[keybind_key] = False
         turtle.onkeypress(key_pressed, key)
         turtle.onkeyrelease(key_released, key)
 
     def update(self) -> bool:
         turtle.title(self.title)
         turtle.bgcolor(self.bg_color)
-        turtle.update()
-        turtle.clear()
-        self.width = turtle.window_width()
-        self.height = turtle.window_height()
-        if not (self.width == self._last_width and self.height == self._last_height):
-            turtle.setworldcoordinates(10, 10, self.width, self.height)
-            turtle.hideturtle()
-            self._last_width = self.width
-            self._last_height = self.height
-        if self.key_tapped("F10", "F10"):
-            self.reset()
-        elif self.key_tapped("F11", "F11"):
-            self.toggle_fullscreen()
-        return True
+        try:
+            turtle.update()
+            turtle.clear()
+            self.width = turtle.window_width()
+            self.height = turtle.window_height()
+            if not (self.width == self._last_width and self.height == self._last_height):
+                turtle.setworldcoordinates(10, 10, self.width, self.height)
+                turtle.hideturtle()
+                self._last_width = self.width
+                self._last_height = self.height
+            if self.key_tapped("F10", "F10"):
+                self.reset()
+            elif self.key_tapped("F11", "F11"):
+                self.toggle_fullscreen()
+            return True
+        except turtle.Terminator:
+            return False
 
 
 class Mesh:
-    def __init__(self, vertices: list[Vec3], normals: list[Vec3], colors: list[Vec3], tris: list[Tri]):
+    def __init__(self, vertices: list[Vec3], normals: list[Vec3], colors: list[Color], tris: list[Tri]):
         self.vertices = vertices
         self.normals = normals
         self.colors = colors
@@ -328,7 +335,7 @@ def read_obj(directory: str, obj_file_name: str, *, flip: bool = False) -> Mesh:
 
     vertices: list[Vec3] = []
     normals: list[Vec3] = []
-    colors: list[Vec3] = [DEFAULT_COLOR]
+    colors: list[Color] = [DEFAULT_COLOR]
     tris: list[Tri] = []
 
     mtls: list[str] = [""]
@@ -534,35 +541,38 @@ class Scene:
 
 
 def main():
-    input_directory = input("Enter directory: ")
-    input_file_name = input("Enter obj file name: ")
-    input_camera_z = input("Enter camera z: ")
-    input_speed = input("Enter speed: ")
+    directory = input("Enter directory: ")
+    file_name = input("Enter obj file name: ")
+    move_speed = float(input("Enter speed: "))
 
     window = Window(500, 500, "3D Viewer")
-    mesh = read_obj(input_directory, input_file_name)
+    mesh = read_obj(directory, file_name)
     scene = Scene([mesh])
 
-    scene.camera_z = float(input_camera_z)
-    move_speed = float(input_speed)
-    turn_speed = float(input_speed) * 30
+    held_mouse_x = 0
+    held_mouse_y = 0
 
-    try:
-        while True:
-            window.update()
+    running = True
+    while running:
+        delta_yaw = 0
+        delta_pitch = 0
+        if window.mouse_down(1):
+            if window.mouse_clicked(1, "drag"):
+                held_mouse_x = window.mouse_x
+                held_mouse_y = window.mouse_y
+            delta_yaw = (window.mouse_x - held_mouse_x) * 180
+            delta_pitch = (window.mouse_y - held_mouse_y) * -180
+            held_mouse_x = window.mouse_x
+            held_mouse_y = window.mouse_y
+        scene.move_camera(0, 0, 0, delta_yaw, delta_pitch, 0)
+        delta_x = (window.key_pressed("d") - window.key_pressed("a")) * move_speed
+        delta_y = (window.key_pressed("space") - window.key_pressed("Shift_L")) * move_speed
+        delta_z = (window.key_pressed("w") - window.key_pressed("s")) * move_speed
+        delta_z, delta_x = rotate2(delta_z, delta_x, scene.camera_yaw)
+        scene.move_camera(delta_x, delta_y, delta_z, 0, 0, 0)
 
-            delta_yaw = (window.key_pressed("Right") - window.key_pressed("Left")) * turn_speed
-            delta_pitch = (window.key_pressed("Up") - window.key_pressed("Down")) * turn_speed
-            scene.move_camera(0, 0, 0, delta_yaw, delta_pitch, 0)
-            delta_x = (window.key_pressed("d") - window.key_pressed("a")) * move_speed
-            delta_y = (window.key_pressed("space") - window.key_pressed("Shift_L")) * move_speed
-            delta_z = (window.key_pressed("w") - window.key_pressed("s")) * move_speed
-            delta_z, delta_x = rotate2(delta_z, delta_x, scene.camera_yaw)
-            scene.move_camera(delta_x, delta_y, delta_z, 0, 0, 0)
-
-            scene.draw(window)
-    except Exit:
-        pass
+        scene.draw(window)
+        running = window.update()
 
 
 if __name__ == "__main__":
