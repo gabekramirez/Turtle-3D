@@ -100,7 +100,7 @@ Table of Contents
 
 Example code to open an obj file using this Python script:
 
-```shell
+```python
 import turtle_3d
 
 
