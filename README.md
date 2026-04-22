@@ -91,7 +91,7 @@ Table of Contents
 - .camera_roll: float = 0
 - .camera_fov: float = 90
 - .camera_z_near: float = 0.01
-- .move_camera(x: float = 0, y: float = 0, z: float = 0, pitch: float = 0, yaw: float = 0, roll: float = 0) -> None
+- .move_camera(x: float = 0, y: float = 0, z: float = 0, yaw: float = 0, pitch: float = 0, roll: float = 0) -> None
 - .draw(window: Window) -> None
 
 
