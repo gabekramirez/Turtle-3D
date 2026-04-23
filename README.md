@@ -24,7 +24,6 @@ Table of Contents
 - DEFAULT_COLOR - Fall back color when none is specified
 - Vec2 - tuple of 2 floats (x, y)
 - Vec3 - tuple of 3 floats (x, y, z)
-- Rot3 - tuple of 3 floats (yaw, pitch, roll) - measured in degrees
 - Color - tuple of 3 floats (r, g, b) - each float in the range [0, 1]
 - Tri - tuple of 5 ints: 3 vertex indices, 1 normal vector index, 1 color index
 
@@ -34,7 +33,8 @@ Table of Contents
 - tan(angle: float) -> float
 - rotate2(x: float, y: float, angle: float) -> Vec2
 - rotate3(x: float, y: float, z: float, yaw: float, pitch: float, roll: float) -> Vec3
-- clamp_rotation(yaw: float, pitch: float, roll: float) -> Rot3
+- clamp360(angle: float) -> float
+- clamp180(angle: float) -> float
 - lerp(a: float, b: float, f: float) -> float
 - rlerp(a: float, b: float, t: float) -> float
 - dot_product(x1: float, y1: float, z1: float, x2: float, y2: float, z2: float) -> float
@@ -128,8 +128,8 @@ def main():
             delta_pitch = (window.mouse_y - held_mouse_y) * -180
             held_mouse_x = window.mouse_x
             held_mouse_y = window.mouse_y
-        scene.camera_yaw, scene.camera_pitch, scene.camera_roll = turtle_3d.clamp_rotation(
-            scene.camera_yaw + delta_yaw, scene.camera_pitch + delta_pitch, 0)
+        scene.camera_yaw = turtle_3d.clamp360(scene.camera_yaw + delta_yaw)
+        scene.camera_pitch = turtle_3d.clamp180(scene.camera_pitch + delta_pitch)
         delta_x = (window.key_pressed("d") - window.key_pressed("a")) * move_speed
         delta_y = (window.key_pressed("space") - window.key_pressed("Shift_L")) * move_speed
         delta_z = (window.key_pressed("w") - window.key_pressed("s")) * move_speed

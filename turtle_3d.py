@@ -18,7 +18,6 @@ DEFAULT_COLOR = (0.5, 0.5, 0.5)
 Vec2 = tuple[float, float]
 Vec3 = tuple[float, float, float]
 Color = tuple[float, float, float]
-Rot3 = tuple[float, float, float]
 Tri = tuple[int, int, int, int, int]
 
 current_angle: float | None = None
@@ -75,14 +74,20 @@ def rotate3(x: float, y: float, z: float, yaw: float, pitch: float, roll: float)
     return x, y, z
 
 
-def clamp_rotation(yaw: float, pitch: float, roll: float) -> Rot3:
-    yaw = 180 - (180 - yaw) % 360
-    if pitch > 90:
-        pitch = 90
-    elif pitch < -90:
-        pitch = -90
-    roll = 180 - (180 - roll) % 360
-    return yaw, pitch, roll
+def clamp360(angle: float) -> float:
+    return 180 - (180 - angle) % 360
+
+
+def clamp180(angle: float) -> float:
+    if angle > 90:
+        angle = 90
+    elif angle < -90:
+        angle = -90
+    return angle
+
+
+def clamp_roll(roll: float) -> float:
+    return 180 - (180 - roll) % 360
 
 
 def lerp(a: float, b: float, f: float) -> float:
@@ -230,7 +235,8 @@ class Window:
         self._root.bind("<ButtonPress>", mouse_press)
         def mouse_release(event):
             self._mouse_binds.clear()
-            self._mouse_buttons.remove(event.num)
+            if event.num in self._mouse_buttons:
+                self._mouse_buttons.remove(event.num)
         self._root.bind("<ButtonRelease>", mouse_release)
         def mouse_move(event):
             self.mouse_x = event.x / self.width
@@ -561,8 +567,8 @@ def main():
             delta_pitch = (window.mouse_y - held_mouse_y) * -180
             held_mouse_x = window.mouse_x
             held_mouse_y = window.mouse_y
-        scene.camera_yaw, scene.camera_pitch, scene.camera_roll = clamp_rotation(
-            scene.camera_yaw + delta_yaw, scene.camera_pitch + delta_pitch, 0)
+        scene.camera_yaw = clamp360(scene.camera_yaw + delta_yaw)
+        scene.camera_pitch = clamp180(scene.camera_pitch + delta_pitch)
         delta_x = (window.key_pressed("d") - window.key_pressed("a")) * move_speed
         delta_y = (window.key_pressed("space") - window.key_pressed("Shift_L")) * move_speed
         delta_z = (window.key_pressed("w") - window.key_pressed("s")) * move_speed
