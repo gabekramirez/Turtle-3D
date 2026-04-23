@@ -18,6 +18,7 @@ DEFAULT_COLOR = (0.5, 0.5, 0.5)
 Vec2 = tuple[float, float]
 Vec3 = tuple[float, float, float]
 Color = tuple[float, float, float]
+Rot3 = tuple[float, float, float]
 Tri = tuple[int, int, int, int, int]
 
 current_angle: float | None = None
@@ -72,6 +73,16 @@ def rotate3(x: float, y: float, z: float, yaw: float, pitch: float, roll: float)
     z, x = rotate2(z, x, yaw)
     z, y = rotate2(z, y, pitch)
     return x, y, z
+
+
+def clamp_rotation(yaw: float, pitch: float, roll: float) -> Rot3:
+    yaw = 180 - (180 - yaw) % 360
+    if pitch > 90:
+        pitch = 90
+    elif pitch < -90:
+        pitch = -90
+    roll = 180 - (180 - roll) % 360
+    return yaw, pitch, roll
 
 
 def lerp(a: float, b: float, f: float) -> float:
@@ -446,17 +457,6 @@ class Scene:
         self.camera_fov = 90
         self.camera_z_near = 0.01
 
-    def set_camera_direction(self, yaw: float, pitch: float, roll: float):
-        self.camera_yaw = yaw
-        self.camera_pitch = pitch
-        self.camera_roll = roll
-        self.camera_yaw = 180 - (180 - self.camera_yaw) % 360
-        if self.camera_pitch > 90:
-            self.camera_pitch = 90
-        elif self.camera_pitch < -90:
-            self.camera_pitch = -90
-        self.camera_roll = 180 - (180 - self.camera_roll) % 360
-
     def draw(self, window: Window):
         tan_half_fov = tan(self.camera_fov * 0.5)
         self._draw_tris.clear()
@@ -561,7 +561,8 @@ def main():
             delta_pitch = (window.mouse_y - held_mouse_y) * -180
             held_mouse_x = window.mouse_x
             held_mouse_y = window.mouse_y
-        scene.set_camera_direction(scene.camera_yaw + delta_yaw, scene.camera_pitch + delta_pitch, 0)
+        scene.camera_yaw, scene.camera_pitch, scene.camera_roll = clamp_rotation(
+            scene.camera_yaw + delta_yaw, scene.camera_pitch + delta_pitch, 0)
         delta_x = (window.key_pressed("d") - window.key_pressed("a")) * move_speed
         delta_y = (window.key_pressed("space") - window.key_pressed("Shift_L")) * move_speed
         delta_z = (window.key_pressed("w") - window.key_pressed("s")) * move_speed
